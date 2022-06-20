@@ -37,9 +37,9 @@ class MessageController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(MessageRequest $request) {
-        $key       = env('SMS_API_KEY'); //your unique API key;
-        $message   = urlencode($request->body); //encode url;
-        $phone     = $request->phone;
+        $key = env('SMS_API_KEY'); //your unique API key;
+        $message = urlencode($request->body); //encode url;
+        $phone = $request->phone;
         $sender_id = $request->sender_id;
 
         $this->sendMessageX($key, $message, $phone, $sender_id);
@@ -54,27 +54,30 @@ class MessageController extends Controller {
     public function bulksms() {
         $key = env('SMS_API_KEY'); //your unique API key;
         // $phone     = $request->phone;
-        $phone = "0244980443";
+        // $phone = "0244980443";
         // $sender_id = $request->sender_id;
         $sender_id = "GRIDSol";
+        $file_path = "C:\\Users\\kwadwo.boateng\\OneDrive - gridcoghana\\emailtosms.xlsx";
 
-        $reader      = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $spreadsheet = $reader->load("C:\\Users\\Kay\\Desktop\\test.xlsx");
-        $sheetData   = $spreadsheet->getActiveSheet()->toArray();
-        $sheet       = $spreadsheet->getActiveSheet();
-        $output      = "";
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        // $spreadsheet = $reader->load("C:\\Users\\Kay\\Desktop\\test.xlsx");
+        $spreadsheet = $reader->load($file_path);
+        $sheetData = $spreadsheet->getActiveSheet()->toArray();
+        $sheet = $spreadsheet->getActiveSheet();
+        $output = "";
         // $i = 1;
 
         // unset($sheetData[0]);
 
         for ($i = 1; $i < count($sheetData); $i++) {
-            $sentStatus = $sheetData[$i][1];
-            // dd($sentStatus);
+            $sentStatus = $sheetData[$i][10];
+            $phone = $sheetData[$i][9];
+
             if ($sentStatus === FALSE) {
                 $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
                 // get message
-                $message = $sheetData[$i][0];
+                $message = $sheetData[$i][5];
 
                 //send sms
                 $output = $this->sendMessageX($key, $message, $phone, $sender_id);
@@ -83,10 +86,10 @@ class MessageController extends Controller {
                 $x = $i + 1;
 
                 // update cell when message is sent
-                $sheet->setCellValue("B{$x}", TRUE);
+                $sheet->setCellValue("K{$x}", TRUE);
 
                 // save excel file after update
-                $writer->save("C:\\Users\\Kay\\Desktop\\test.xlsx");
+                $writer->save($file_path);
 
             } else {
                 $output = "All messages sent!";
